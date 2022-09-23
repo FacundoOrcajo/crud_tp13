@@ -1,8 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const productsFilePath = path.join(__dirname, '../data/productsDataBase.json');
-const products = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
+const {loadProducts, storeProducts} = require('../data/productsModule');
 
 const toThousand = n => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
@@ -15,6 +11,7 @@ const controller = {
 	// Detail - Detail from one product
 	detail: (req, res) => {
 		// Do the magic
+		const products = loadProducts();
 		const product = products.find(product => product.id === +req.params.id);
 		return res.render('detail', {
 			product,
@@ -37,7 +34,8 @@ const controller = {
 	// Update - Form to edit
 	edit: (req, res) => {
 		// Do the magic
-		const product = product.find(product => product.id === +req.params.id);
+		const products =loadProducts();
+		const product = loadProducts().product.find(product => product.id === +req.params.id);
 		return res.render('product-edit-form',{
 			product
 		})
@@ -45,6 +43,7 @@ const controller = {
 	// Update - Method to update
 	update: (req, res) => {
 		// Do the magic
+		const products = loadProducts();
 		const {name,price,discount,category,description} = req.body;
 		const productModify = products.map(product => {
 			if(product.id === +req.params.id){
@@ -57,7 +56,11 @@ const controller = {
 					category
 				}
 			}
-		})
+			return product
+		})	
+		storeProducts(productModify);
+	
+	return res.redirect('/products/detail' + req.params.id)
 	},
 
 	// Delete - Delete one product from DB
